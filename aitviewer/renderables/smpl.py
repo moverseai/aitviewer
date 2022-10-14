@@ -188,7 +188,10 @@ class SMPLSequence(Node):
 
         body_data = np.load(npz_data_path)
         if smpl_layer is None:
-            smpl_layer = SMPLLayer(model_type='smplh', gender=body_data['gender'].item(), device=C.device)
+            smpl_layer = SMPLLayer(
+                model_type=C.body.type, gender=body_data['gender'].item(), 
+                device=C.device, num_betas=C.body.num_betas
+            )
 
         if log:
             print('Data keys available: {}'.format(list(body_data.keys())))
@@ -196,7 +199,7 @@ class SMPLSequence(Node):
             print('{:>6d} trans of size {:>4d}.'.format(body_data['trans'].shape[0], body_data['trans'].shape[1]))
             print('{:>6d} shape of size {:>4d}.'.format(1, body_data['betas'].shape[0]))
             print('Gender {}'.format(body_data['gender']))
-            print('FPS {}'.format(body_data['mocap_framerate']))
+            print('FPS {}'.format(body_data['mocap_frame_rate']))
 
         sf = start_frame or 0
         ef = end_frame or body_data['poses'].shape[0]
@@ -204,7 +207,7 @@ class SMPLSequence(Node):
         trans = body_data['trans'][sf:ef]
 
         if fps_out is not None:
-            fps_in = body_data['mocap_framerate'].tolist()
+            fps_in = body_data['mocap_frame_rate'].tolist()
             if fps_in != fps_out:
                 ps = np.reshape(poses, [poses.shape[0], -1, 3])
                 ps_new = resample_rotations(ps, fps_in, fps_out)
@@ -225,6 +228,48 @@ class SMPLSequence(Node):
                    trans=trans, z_up=z_up, **kwargs)
 
     @classmethod
+    def empty(cls, gender: str=C.body.gender, z_up=True, **kwargs):
+        smpl_layer = SMPLLayer(
+            model_type=C.body.type, gender=C.body.gender, 
+            device=C.device, num_betas=C.body.num_betas
+        )
+        poses = np.zeros((1, 63))
+        trans = np.zeros((1, 3))
+        rots = np.zeros((1, 3))
+        lhand = np.zeros((1, 45))
+        rhand = np.zeros((1, 45))
+        betas = np.zeros((1, C.body.num_betas))
+
+        return cls(poses_body=poses,
+                   poses_root=rots,
+                   poses_left_hand=lhand,
+                   poses_right_hand=rhand,
+                   smpl_layer=smpl_layer,
+                   betas=betas,
+                   trans=trans, z_up=z_up, **kwargs)
+
+    @classmethod
+    def empty_from(cls, sequence, gender: str=C.body.gender, z_up=True, **kwargs):
+        smpl_layer = SMPLLayer(
+            model_type=C.body.type, gender=C.body.gender, 
+            device=C.device, num_betas=C.body.num_betas
+        )
+        poses = sequence.poses_body[0:1]
+        trans = sequence.trans[0:1]
+        rots = sequence.poses_root[0:1]
+        lhand = sequence.poses_left_hand[0:1]
+        rhand = sequence.poses_right_hand[0:1]
+        betas = sequence.betas[0:1]
+
+        return cls(poses_body=poses,
+                   poses_root=rots,
+                   poses_left_hand=lhand,
+                   poses_right_hand=rhand,
+                   smpl_layer=smpl_layer,
+                   betas=betas,
+                   trans=trans, z_up=z_up, **kwargs)
+
+    @classmethod
     def from_3dpw(cls, pkl_data_path, smplx_neutral=False, **kwargs):
         """Load a 3DPW sequence which might contain multiple people."""
         with open(pkl_data_path, 'rb') as p:
@@ -232,7 +277,10 @@ class SMPLSequence(Node):
         num_people = len(body_data['poses'])
 
         if smplx_neutral:
-            smpl_layer = SMPLLayer(model_type='smplx', gender='neutral', num_betas=10, flat_hand_mean=True)
+            smpl_layer = SMPLLayer(
+                model_type=C.body.type, gender=C.body.gender, 
+                num_betas=C.body.num_betas, flat_hand_mean=True
+            )
 
         poses_key = 'poses_smplx' if smplx_neutral else 'poses'
         trans_key = 'trans_smplx' if smplx_neutral else 'trans'
@@ -242,10 +290,12 @@ class SMPLSequence(Node):
 
         seqs = []
         for i in range(num_people):
-            gender = body_data['genders'][i]
+            # gender = body_data['genders'][i]
             if not smplx_neutral:
-                smpl_layer = SMPLLayer(model_type='smpl', gender='female' if gender == 'f' else 'male', device=C.device,
-                                       num_betas=10)
+                smpl_layer = SMPLLayer(
+                    model_type=C.body.type, gender=C.body.gender, 
+                    device=C.device, num_betas=C.body.num_betas
+                )
 
             # Extract the 30 Hz data that is already aligned with the image data.
             poses = body_data[poses_key][i]
@@ -271,7 +321,10 @@ class SMPLSequence(Node):
         """Creates a SMPL sequence whose single frame is a SMPL mesh in T-Pose."""
 
         if smpl_layer is None:
-            smpl_layer = SMPLLayer(model_type='smplh', gender='neutral')
+            smpl_layer = SMPLLayer(
+                model_type=C.body.type, gender=C.body.gender,
+                num_betas=C.body.num_betas, device=C.device,
+            )
 
         poses = np.zeros([frames, smpl_layer.bm.NUM_BODY_JOINTS * 3])  # including hands and global root
         return cls(poses, smpl_layer, betas=betas, **kwargs)
@@ -280,7 +333,10 @@ class SMPLSequence(Node):
     def from_npz(cls, file: Union[IO, str], smpl_layer: SMPLLayer=None, **kwargs):
         """Creates a SMPL sequence from a .npz file exported through the 'export' function."""
         if smpl_layer is None:
-            smpl_layer = SMPLLayer(model_type='smplh', gender='neutral')
+            smpl_layer = SMPLLayer(
+                model_type=C.body.type, gender=C.body.gender,
+                num_betas=C.body.num_betas, device=C.device,
+            )
 
         data = np.load(file)
 
@@ -343,7 +399,7 @@ class SMPLSequence(Node):
             poses_right_hand = None if self.poses_right_hand is None else self.poses_right_hand[self.current_frame_id][None, :]
             trans = self.trans[self.current_frame_id][None, :]
 
-            if self.betas.shape[0] == self.n_frames:
+            if self.betas.shape[0] >= self.n_frames:
                 betas = self.betas[self.current_frame_id][None, :]
             else:
                 betas = self.betas

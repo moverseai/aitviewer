@@ -8,3 +8,5 @@ export/
 data/
 .vscode/
 tests/failure/
+
+configs/

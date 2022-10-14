@@ -10,6 +10,9 @@ datasets:
 smplx_models: "../data/smplx_models"
 star_models: "../data/star_models"
 
+body:
+  type: smplx
+
 # Pytorch configuration.
 device: "cuda:0"
 f_precision: 32

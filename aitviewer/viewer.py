@@ -515,7 +515,7 @@ class Viewer(moderngl_window.WindowConfig):
 
     def gui_menu(self):
         clicked_export = False
-
+        
         if imgui.begin_main_menu_bar():
             if imgui.begin_menu("File", True):
 
