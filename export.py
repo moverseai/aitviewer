@@ -62,7 +62,7 @@ class ExportingViewer(Viewer):
             )
             self.scene.add(sequence)
             self.loaded_sequences.append(sequence.name)
-            self.subject = f"{os.path.basename(os.path.dirname(filename))}_{os.path.splitext(os.path.basename(filename))[0]}"
+            self.subject = f"{os.path.basename(os.path.dirname(filename))}_{os.path.splitext(os.path.basename(filename))[0]}".replace('_stageii', '')
         # imgui.same_line()
         # if imgui.button('Remove Selected', width=100, height=50):
         #     sequence = toolz.get(0, list(filter(
@@ -181,11 +181,12 @@ class ExportingViewer(Viewer):
                 self.exported.names.pop(removed_id-1)
             imgui.same_line(spacing=15)
             mode_clicked = imgui.button(f"Export", width=125, height=50)
-            if mode_clicked and len(self.exported.genders) > 1:
-                print('export')
-                filename = os.path.join(C.export_dir, self.part, self.subject, f"{self.action}.npz")
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
-                np.savez(filename,
+            if mode_clicked and len(self.exported.genders) > 1:                
+                stageii_filename = os.path.join(C.export_dir, self.part, 
+                    self.subject, f"{self.action}_stageii.npz"
+                )                
+                os.makedirs(os.path.dirname(stageii_filename), exist_ok=True)
+                np.savez(stageii_filename,
                     betas=to_numpy(self.exported.betas[1:]),
                     trans=to_numpy(self.exported.trans[1:]),
                     root_orient=to_numpy(self.exported.poses_root[1:]),
@@ -204,7 +205,13 @@ class ExportingViewer(Viewer):
                     )),
                     gender=np.array(self.exported.genders[1], dtype='U6'),
                 )
-            imgui.text(f"Exported Frame #{self.exported.current_frame_id+1} / {self.exported.n_frames}")
+                stagei_filename = os.path.join(C.export_dir, self.part, self.subject, f"{self.exported.genders[1]}_stagei.npz")
+                np.savez(stagei_filename,
+                    gender=np.array(self.exported.genders[1], dtype='U6'),
+                    betas=to_numpy(self.exported.betas[1]),
+                )
+                print(f"Files saved:\n\tShape: {stagei_filename}\n\tAction: {stageii_filename}")
+
             imgui.end_group()
         imgui.end()
 
