@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # load pkl file and markers
     root = C.root
     npz_fls = sorted(
-        glob.glob(os.path.join(root, "fit", "mpj", "uncertainty", "npz", "*.npz"))
+        glob.glob(os.path.join(root, "fit", C.fitting.method, C.fitting.type, "npz", "*.npz"))
     )
     markers_predicted = sorted(glob.glob(os.path.join(root, "markers", "*.ply")))
 
