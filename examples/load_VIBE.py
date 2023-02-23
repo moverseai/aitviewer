@@ -35,7 +35,7 @@ HEADLESS = False
 
 if __name__ == '__main__':
     # Load camera and SMPL data from the output of the VIBE demo from https://github.com/mkocabas/VIBE
-    data = joblib.load(open("resources/vibe/vibe_output.pkl", 'rb'))
+    data = joblib.load(open("examples/resources/vibe/vibe_output.pkl", 'rb'))
     camera_info = data[1]['orig_cam']
     poses = data[1]['pose']
     betas = data[1]['betas']
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     cameras = WeakPerspectiveCamera(camera_info[:, :2], camera_info[:, 2:], cols, rows, far=3, viewer=viewer)
 
     # Path to the directory containing the video frames.
-    images_path = "resources/vibe/frames"
+    images_path = "examples/resources/vibe/frames"
 
     # Sort images by frame number in the filename.
     regex = re.compile(r"(\d*)$")

@@ -10,3 +10,6 @@ data/
 tests/failure/
 
 configs/
+
+# custom
+*.png
