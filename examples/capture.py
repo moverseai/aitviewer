@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     # create viewer
     v = Viewer()
-    for cfl in glob.glob(os.path.join(root, "cameras", "info", "*.npz")):
+    for i , cfl in enumerate(glob.glob(os.path.join(root, "cameras", "info", "*.npz"))):
         camera_type = cfl.split("_")[-2].split("-")[0]
         camera_info = np.load(cfl)
         radial_dist = camera_info["radial"]
@@ -143,6 +143,8 @@ if __name__ == "__main__":
             dist_coeffs=dist_coeffs,
             viewer=v,
             is_selectable=False,
+            inactive_color= tuple(C.frustums[i]['color']),
+            active_color= tuple(C.frustums[i]['color']),
         )
         cameras.append(camera)
         v.scene.add(camera)
