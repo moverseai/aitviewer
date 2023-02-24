@@ -70,7 +70,8 @@ class MBSMPL(SMPLSequence):
         trans = body_data['trans'] if not 'trans' in kwargs.keys() \
             else kwargs['trans']
         color = tuple(body_data["color"]) if 'color' in body_data.keys() \
-            else (0.5,0.5,0.5,1.0) # set a random color
+            else  kwargs['color'] if 'color' in kwargs.keys() else \
+                (0.5,0.5,0.5,1.0) # set a random color
 
         return cls(
             poses_body=body_data["poses"][:, i_root_end:i_body_end],
@@ -83,7 +84,7 @@ class MBSMPL(SMPLSequence):
             trans = trans,
             z_up=z_up,
             color=color,
-            **toolz.dissoc(kwargs,'trans')
+            **toolz.dissoc(kwargs,'trans','color')
             # **kwargs,
         )
 

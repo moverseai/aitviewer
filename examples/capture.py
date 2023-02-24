@@ -124,7 +124,8 @@ if __name__ == "__main__":
 
     # create viewer
     v = Viewer()
-    for cfl in glob.glob(os.path.join(root, "*.npz")):
+    for cfl in glob.glob(os.path.join(root, "cameras", "info", "*.npz")):
+        camera_type = cfl.split("_")[-2].split("-")[0]
         camera_info = np.load(cfl)
         radial_dist = camera_info["radial"]
         tangential_dist = camera_info["tangential"]
@@ -146,8 +147,8 @@ if __name__ == "__main__":
         cameras.append(camera)
         v.scene.add(camera)
         # create a billobard
-        camera_index = cfl.split("_")[-2]
-        images_path = os.path.join(root, "cameras", camera_index)
+        camera_index = cfl.split("_")[-2].split("-")[-1]
+        images_path = os.path.join(root, "cameras", "images", camera_index)
         if not os.path.exists(images_path):
             print(f"no images for camera {camera_index}")
         else:
