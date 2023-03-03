@@ -73,9 +73,13 @@ class MBSMPL(SMPLSequence):
             else  kwargs['color'] if 'color' in kwargs.keys() else \
                 (0.5,0.5,0.5,1.0) # set a random color
 
+        global_orient = body_data["poses"][:, :i_root_end] if not 'global_orient' in kwargs.keys() \
+            else kwargs['global_orient']
+
         return cls(
             poses_body=body_data["poses"][:, i_root_end:i_body_end],
-            poses_root=body_data["poses"][:, :i_root_end],
+            # poses_root=body_data["poses"][:, :i_root_end],
+            poses_root=global_orient,
             poses_left_hand=body_data["poses"][:, i_body_end:i_left_hand_end],
             poses_right_hand=body_data["poses"][:, i_left_hand_end:i_right_hand_end],
             smpl_layer=smpl_layer,
@@ -84,7 +88,7 @@ class MBSMPL(SMPLSequence):
             trans = trans,
             z_up=z_up,
             color=color,
-            **toolz.dissoc(kwargs,'trans','color')
+            **toolz.dissoc(kwargs,'trans','color', 'global_orient')
             # **kwargs,
         )
 
