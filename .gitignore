@@ -10,3 +10,6 @@ data/
 tests/failure/
 
 configs/
+*.npz
+*.log
+/**/screenshots/*

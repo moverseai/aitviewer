@@ -59,7 +59,7 @@ class ExportingViewer(Viewer):
             sequence = SMPLSequence.from_amass(npz_data_path=filename,                
                 fps_out=60.0, color=(239/255, 42/255, 239/255, 0.5),
                 name=displayname, show_joint_angles=True
-            )
+            )#NOTE: set fps_out to None to avoid temporal resampling
             self.scene.add(sequence)
             self.loaded_sequences.append(sequence.name)
             self.subject = f"{os.path.basename(os.path.dirname(filename))}_{os.path.splitext(os.path.basename(filename))[0]}".replace('_stageii', '')
@@ -211,11 +211,12 @@ class ExportingViewer(Viewer):
                     betas=to_numpy(self.exported.betas[1]),
                 )
                 print(f"Files saved:\n\tShape: {stagei_filename}\n\tAction: {stageii_filename}")
-
+                # poses = to_numpy(torch.cat([self.exported.poses_root[1:], self.exported.poses_body[1:], self.exported.poses_left_hand[1:], self.exported.poses_right_hand[1:]], dim=-1))
+                # mocap_frame_rate=np.array(60.0)
             imgui.end_group()
         imgui.end()
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
     v = ExportingViewer()
     v.run_animations = True
     v.scene.camera.position = np.array([10.0, 2.5, 0.0])    
